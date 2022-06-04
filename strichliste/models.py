@@ -1,9 +1,10 @@
 from flask import current_app
 from datetime import datetime
-from strichliste.extensions import db, login_manager
+from strichliste.extensions import db, login_manager, admin
 from flask_login import UserMixin
 #from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import jwt
+from flask_admin.contrib.sqla import ModelView
 
 
 @login_manager.user_loader
@@ -73,6 +74,9 @@ class Consumer(db.Model):
         return '<Consumer %r>' % self.name
 
 
+admin.add_view(ModelView(Consumer, db.session))
+
+
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.Text, unique=True, nullable=False)
@@ -84,6 +88,9 @@ class Category(db.Model):
 
     def __repr__(self):
         return "<Category %r>" % self.name
+
+
+admin.add_view(ModelView(Category, db.session))
 
 
 class Product(db.Model):
@@ -100,6 +107,9 @@ class Product(db.Model):
 
     def __repr__(self):
         return "<Product %r>" % self.name
+
+
+admin.add_view(ModelView(Product, db.session))
 
 
 class Transaction(db.Model):

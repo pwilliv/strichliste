@@ -1,6 +1,9 @@
 from flask import Flask
 from strichliste.config import Config
 from strichliste.extensions import db, migrate, bcrypt, login_manager, mail
+from flask import Flask
+from strichliste.config import Config
+from strichliste.extensions import db, migrate, bcrypt, login_manager, mail, admin
 
 
 def create_app(config_class=Config):
@@ -20,5 +23,6 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    admin.init_app(app)
 
     return app

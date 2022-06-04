@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 backend = Blueprint('backend', __name__)
 
 
-@backend.route("/admin")
+@backend.route("/management")
 @login_required
 def management():
     return render_template('management.html')
