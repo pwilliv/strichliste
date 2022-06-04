@@ -151,4 +151,6 @@ ENV/
 # Rope project settings
 .ropeproject
 
+.idea/*
+migrations/*
 strichliste/db.sqlite3
