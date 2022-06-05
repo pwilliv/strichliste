@@ -1,9 +1,10 @@
-from flask import current_app
+from flask import current_app, redirect, url_for
 from datetime import datetime
 from strichliste.extensions import db, login_manager, admin
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 #from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import jwt
+from flask_admin import AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -74,9 +75,6 @@ class Consumer(db.Model):
         return '<Consumer %r>' % self.name
 
 
-admin.add_view(ModelView(Consumer, db.session))
-
-
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.Text, unique=True, nullable=False)
@@ -88,9 +86,6 @@ class Category(db.Model):
 
     def __repr__(self):
         return "<Category %r>" % self.name
-
-
-admin.add_view(ModelView(Category, db.session))
 
 
 class Product(db.Model):
@@ -107,9 +102,6 @@ class Product(db.Model):
 
     def __repr__(self):
         return "<Product %r>" % self.name
-
-
-admin.add_view(ModelView(Product, db.session))
 
 
 class Transaction(db.Model):
@@ -134,3 +126,25 @@ class Transaction(db.Model):
 
     def __repr__(self):
         return "<Transaction %r - %r>" % (self.consumer.name, self.product.name)
+
+
+# Flask-Admin Section
+class SecAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('users.login'))
+
+
+class SecModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('users.login'))
+
+
+admin.add_view(SecModelView(Consumer, db.session))
+admin.add_view(SecModelView(Category, db.session))
+admin.add_view(SecModelView(Product, db.session))
