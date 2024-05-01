@@ -82,6 +82,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+env-strichliste/
 build/
 develop-eggs/
 dist/
