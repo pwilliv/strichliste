@@ -51,10 +51,10 @@ function reloadWhenOnline() {
         });
 }
 
-$(function(){
-    commitRequests(); // start commit handler
-    setTimeout(reloadWhenOnline, reloadEvery * 1000);
-});
+// $(function(){
+//     commitRequests(); // start commit handler
+//     setTimeout(reloadWhenOnline, reloadEvery * 1000);
+// });
 
 function book(human_id, category_id, amount, increment_button) {
     if (typeof increment_button === "undefined") {
@@ -63,9 +63,9 @@ function book(human_id, category_id, amount, increment_button) {
 
     if (increment_button) {
         //increment button locally
-        var id = "bt-" + human_id + "%" + category_id;
-        var button = document.getElementById(id);
-        button.textContent = Number(button.textContent) + amount;
+        var id = "sp-" + human_id + "%" + category_id;
+        var span = document.getElementById(id);
+        span.textContent = Number(span.textContent) + amount;
     }
 
     var url = "/add_transaction/" + human_id + "/" + category_id + "/" + String(amount);
@@ -109,20 +109,14 @@ function batch_order(human_id, category_id) {
 }
 
 function addUserDialog() {
-    BootstrapDialog.show({
-        title: 'Neuen Nutzer ',
-        message: $('<input type="text" id="newUserName" value="" maxlength="100" />'),
-        buttons: [{
-            label: 'anlegen',
-            cssClass: 'btn-primary',
-            hotkey: 13, // Enter.
-            action: function () {
-                var url = ("add_user/" + document.getElementById("newUserName").value);
-                var jqxhr = $.ajax(sign(url))
-                    .done(function () {
-                        location.reload();
-                    })
-            }
-        }]
-    });
+    const myModal = new bootstrap.Modal(document.getElementById('newUserDialog'))
+    myModal.show();
+}
+
+function addUser() {
+    var url = ("add_user/" + document.getElementById("newUserName").value);
+    var jqxhr = $.ajax(sign(url))
+        .done(function () {
+            location.reload();
+        })
 }

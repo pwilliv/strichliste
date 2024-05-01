@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="de">
+
 <head>
   <title>Getränkeliste</title>
 
@@ -8,69 +9,115 @@
   <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="static/bootstrap/css/bootstrap-icons.min.css">
   <link rel="stylesheet" href="static/fontawesome/css/fontawesome.css">
-  <script src="static/jquery.min.js"></script>
-  <script src="static/bootstrap/js/bootstrap.min.js"></script>
-    <script src="static/bootstrap/js/bootstrap-dialog.min.js"></script>
-    <script src="static/barn.js"></script>
-    <script src="static/frontend.js"> </script>
-    <script src="static/sha512.js"></script>
+  <link rel="stylesheet" href="static/fontawesome/css/solid.css">
+  <link rel="stylesheet" href="static/layout.css">
+  <link rel="stylesheet" href="static/css@3.css">
+
 </head>
+
 <body>
-
-<div class="container" style="margin-bottom: 40px;">
-  <h2>Getränkeliste Familientreffen 2024</h2>
-<!--   <p>
-      Benutze
-      <button type="button" class="btn btn-danger">
-                          <span class="glyphicon glyphicon-th"></span></button>, um Kästen abzustreichen.</p> -->
-
-  <table class="table table-striped header-fixed">
-    <thead>
-      <tr>
-        {% for field in fields %}
-          <th>
+  <div class="dropdown position-fixed top-0 end-0 mt-1 me-1 bd-mode-toggle">
+    <!--<button class="btn-bd-primary py-2 d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (light)">-->
+    <button class="btn btn-lg dropdown-toggle p-3" id="bd-theme" type="button" aria-expanded="false"
+      data-bs-toggle="dropdown">
+      <i class="fa-solid fa-gears fa-xl"></i>
+      <span class="visually-hidden" id="bd-theme-text">Settings</span>
+    </button>
+    <!-- <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text"> -->
+      <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+      <li>
+        <button type="button" class="dropdown-item d-flex align-items-center" onclick="addUserDialog()">
+          <i class="fa-solid fa-user-plus me-2"></i>
+          Neuer Nutzer
+        </button>
+      </li>
+      <li>
+        <a class="dropdown-item d-flex align-items-center" href="{{ url_for('balances') }}"><i class="fa-solid fa-chart-simple me-2"></i>Auswertung</a>
+      </li>
+      <li>
+        <button type="button" class="btn btn-warning dropdown-item d-flex align-items-center" onclick="undo()">
+          <i class="fa-solid fa-rotate-left me-2"></i>
+          Rückgängig
+        </button>
+      </li>
+    </ul>
+  </div>
+  <div class="bg-light m-0">
+    <header class="d-flex justify-content-center py-3">
+      <h2>Getränkeliste Familientreffen 2024</h2>
+      <hr>
+    </header>
+  </div>
+  <main class="d-flex flex-column mx-4 mt-4">
+    <div class="flex-row">
+      <table class="table table-striped header-fixed">
+        <thead>
+          <tr>
+            {% for field in fields %}
+            <th>
               {{field.name}}
-          </th>
-          {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-    {% for human in humans %}
-      <tr>
-        {% for val in human %}
-          <th>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for human in humans %}
+          <tr>
+            {% for val in human %}
+            <th>
               {% if val is number %}
-                  {% with human_id = human[0].id %}
-                  {% with category_id = fields[(loop.index - 1)].id %}
-                  {% with id = human_id ~ "%" ~ category_id %}
-                  <span style="font-size: {{scaling}}">{{val}}</span>
-                      <button type="button" id="bt-{{ id }}" class="btn btn-primary btn-lg"
-                              onclick="book('{{human_id}}', '{{category_id}}', 1)">
-
-                      </button>
-                      <!-- <button type="button" class="btn btn-danger btn-lg" onclick="batch_order('{{human_id}}','{{category_id}}')">
-                          <span class="glyphicon glyphicon-th" style="font-size: {{scaling}}"></span></button> -->
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
+              {% with human_id = human[0].id %}
+              {% with category_id = fields[(loop.index - 1)].id %}
+              {% with id = human_id ~ "%" ~ category_id %}
+              <span style="font-size: {{scaling}}" id="sp-{{ id }}">{{val}}</span>
+              <button type="button" id="bt-{{ id }}" class="btn btn-primary ms-2"
+                onclick="book('{{human_id}}', '{{category_id}}', 1)">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              {% endwith %}
+              {% endwith %}
+              {% endwith %}
               {% else %}
-                    {{val.name}}
+              {{val.name}}
               {% endif %}
-          </th>
-          {% endfor %}
+            </th>
+            {% endfor %}
 
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-    <button type="button" class="btn btn-primary"
-                              onclick="addUserDialog()">
-                          <span style="font-size: {{scaling}}">neuer Nutzer</span>
-                      </button>
-    <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
-    <button type="button" class="btn btn-danger" id="network_problem" style="visibility: hidden;">
-         Netzwerkproblem!
-     </button>
-</div>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="flex-row">
+      <!-- Zeile unter der Tabelle -->
+    </div>
+  </main>
+  <div class="modal" tabindex="-1" id="newUserDialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Neuen Nutzer anlegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Name des Benutzers angeben</p>
+          <input type="text" id="newUserName" value="" maxlength="100" class="form-control"/>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+          <button type="button" class="btn btn-primary" onclick="addUser()">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- <script src="static/bootstrap/js/bootstrap.min.js"></script> verhindert Dropdown-->
+  <!-- <script src="static/bootstrap/js/bootstrap-dialog.min.js"></script> -->
+  <script src="static/barn.js"></script>
+  <script src="static/frontend.js"> </script>
+  <script src="static/sha512.js"></script>
+  <script src="static/jquery.min.js"></script>
+  <script src="static/popper.min.js"></script>
 </body>
+
 </html>
