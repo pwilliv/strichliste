@@ -1,66 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="de">
+
 <head>
-  <title>Strichliste</title>
+  <title>Getränkeliste</title>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
-    <script src="static/bootstrap-datepicker.js"></script>
-    <style src="static/datepicker.css"></style>
-    <!--  http://www.eyecon.ro/bootstrap-datepicker/ -->
-    <script>
-        $("body").ready(function () {
-            $('#dp0').datepicker();
-        })
-    </script>
+  <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/bootstrap/css/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="static/fontawesome/css/fontawesome.css">
+  <link rel="stylesheet" href="static/fontawesome/css/solid.css">
+  <link rel="stylesheet" href="static/layout.css">
+  <link rel="stylesheet" href="static/css@3.css">
+  <style src="static/datepicker.css"></style>
+
+  <script>
+    $("body").ready(function () {
+      $('#dp0').datepicker();
+    })
+  </script>
 </head>
+
 <body>
-
-<div class="container" style="margin-bottom: 40px;">
-  <h2>Strichliste</h2>
-  <p>
+  <div class="dropdown position-fixed top-0 end-0 mt-1 me-1 bd-mode-toggle">
+    <!--<button class="btn-bd-primary py-2 d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (light)">-->
+    <button class="btn btn-lg dropdown-toggle p-3" id="bd-theme" type="button" aria-expanded="false"
+      data-bs-toggle="dropdown">
+      <i class="fa-solid fa-gears fa-xl"></i>
+      <span class="visually-hidden" id="bd-theme-text">Settings</span>
+    </button>
+    <!-- <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text"> -->
+    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+      <li>
+        <button type="button" class="dropdown-item d-flex align-items-center" onclick="addUserDialog()">
+          <i class="fa-solid fa-user-plus me-2"></i>
+          Neuer Nutzer
+        </button>
+      </li>
+      <li>
+        <a class="dropdown-item d-flex align-items-center" href="{{ url_for('balances') }}"><i
+            class="fa-solid fa-chart-simple me-2"></i>Auswertung</a>
+      </li>
+      <li>
+        <button type="button" class="btn btn-warning dropdown-item d-flex align-items-center" onclick="undo()">
+          <i class="fa-solid fa-rotate-left me-2"></i>
+          Rückgängig
+        </button>
+      </li>
+    </ul>
+  </div>
+  <div class="bg-light m-0">
+    <header class="d-flex justify-content-center py-3">
+      <h2>Getränkeliste Familientreffen 2024</h2>
+      <hr>
+    </header>
+  </div>
+  <main class="d-flex flex-column mx-4 mt-4">
+    <!-- <div class="flex-row">
+      <div class="container" style="margin-bottom: 40px;">
         <form action="/balances">
-
-    Abrechnungszeitraum wählen: (Funktioniert am besten mit Chrome)
-    <br>
-    Beginn: <input type=date name="begin" value="YYYY-MM-DD">
-  <br>
-  Ende: <input type=date name="end" value="YYYY-MM-DD">
-  <br>
-  <input type="submit" value="Abschicken">
-  </form>
-
-</div>
-</div>
-  </p>
-  <table class="table table-striped header-fixed">
-    <thead>
-      <tr>
-          <th>
+          Abrechnungszeitraum wählen: (Funktioniert am besten mit Chrome)
+          <br>
+          Beginn: <input type=date name="begin" value="YYYY-MM-DD">
+          <br>
+          Ende: <input type=date name="end" value="YYYY-MM-DD">
+          <br>
+          <input type="submit" value="Abschicken">
+        </form>
+      </div>
+    </div> -->
+    <div class="flex-row">
+      <table class="table table-striped header-fixed">
+        <thead>
+          <tr>
+            <th>
               Name
-          </th>
-          <th>
+            </th>
+            <th>
               Bilanz
-          </th>
+            </th>
 
-      </tr>
-    </thead>
-    <tbody>
-    {% for human in humans %}
-      <tr>
-        {% for val in human %}
-          <th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for human in humans %}
+          <tr>
+            {% for val in human %}
+            <th>
               {{val}}
-          </th>
-          {% endfor %}
+            </th>
+            {% endfor %}
 
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="flex-row">
+      <!-- Zeile unter der Tabelle -->
+    </div>
+  </main>
+  <div class="modal" tabindex="-1" id="newUserDialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Neuen Nutzer anlegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Name des Benutzers angeben</p>
+          <input type="text" id="newUserName" value="" maxlength="100" class="form-control" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+          <button type="button" class="btn btn-primary" onclick="addUser()">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- <script src="static/bootstrap/js/bootstrap.min.js"></script> verhindert Dropdown-->
+  <!-- <script src="static/bootstrap/js/bootstrap-dialog.min.js"></script> -->
+  <script src="static/barn.js"></script>
+  <script src="static/frontend.js"> </script>
+  <script src="static/sha512.js"></script>
+  <script src="static/jquery.min.js"></script>
+  <script src="static/popper.min.js"></script>
+  <script src="static/bootstrap-datepicker.js"></script>
+  <!--  http://www.eyecon.ro/bootstrap-datepicker/ -->
 </body>
+
 </html>
