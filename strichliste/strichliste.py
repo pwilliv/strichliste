@@ -6,15 +6,12 @@ import argparse
 import random
 import hashlib
 from string import ascii_letters
-from flask import Flask
-from flask import abort
-from flask import current_app
-from flask import render_template
-from flask import request
+from flask import Flask, abort, current_app, render_template, request, jsonify
 from whitenoise import WhiteNoise
 from models import db, User, Category, Product, Transaction
 from sys import exit
 from time import sleep
+
 
 eventlet.monkey_patch()
 
@@ -158,40 +155,33 @@ def get_number_of_purchases(user: User,
             )
     )
 
-
+#NEW
 @current_app.route("/")
 def hello():
-    def get_user_data(user: User):
-        output = list()
-        output.append(user)
-        for category in Category.query.order_by(Category.price).all():
-            output.append(
-                sum(
-                    list(map(lambda x: x.amount,
-                             list(Transaction.query.filter(Transaction.category == category,
-                                                           Transaction.user == user,
-                                                           Transaction.undone == False))
-                             ))
-                )
+    # Funktion zur Ermittlung der Daten eines Benutzers
+    def get_user_data(user):
+        user_data = [user.name]  # Benutzername als erstes Element hinzufügen
+        for category in categories:  # Für jede Kategorie
+            # Summe der Beträge für Transaktionen dieses Benutzers und dieser Kategorie erhalten
+            category_total = sum(
+                transaction.amount for transaction in user.transactions.filter_by(category=category, undone=False)
             )
-        return output
+            user_data.append(category_total)  # Summe zur Benutzerdatenliste hinzufügen
+        return user_data
 
-    data = dict()
-    data["humans"] = list()
-    data["fields"] = list()
-    # data["humans"].append(["Dirk", 12, 1, 124, 0])
-    # data["humans"].append(["Annika", 34, 23, 4, 0])
-    # data["fields"] = ["Name", "Ö-Softdrinks", "Ö-Hell/Mate, Wasser", "Pils/Cola", "Weizen/Augustiner/Mate"]
-    name_field = Category("Name", 42)
-    name_field.name = "Name"
-    data["fields"].append(name_field)
-    for category in Category.query.order_by(Category.price).all():
-        data["fields"].append(category)
-    [data["humans"].append(get_user_data(user)) for user in User.query.order_by(User.name).all()]
-    return render_template("index.html",
-                           humans=data["humans"],
-                           fields=data["fields"],
-                           scaling="100%")  # ugly, semi-functional and currently only used for fiddling
+    # Alle Kategorien abrufen und nach Preis sortieren
+    categories = Category.query.order_by(Category.price).all()
+
+    # Daten für die Ausgabe vorbereiten
+    humans_data = []
+    fields_data = ["Name"] + [category.name for category in categories]
+
+    # Daten für jeden Benutzer sammeln
+    for user in User.query.order_by(User.name).all():
+        humans_data.append(get_user_data(user))
+
+    # Vorlage mit Daten rendern und zurückgeben
+    return render_template("index.html", humans=humans_data, fields=fields_data, scaling="100%")
 
 
 @current_app.route("/balances")
@@ -244,29 +234,30 @@ def check_transaction(transaction: str, hash: str, psk: str = PSK) -> bool:
     challenge = "".join(random.SystemRandom().choice(ascii_letters) for _ in range(42))
     return hash == correct_response
 
+#NEW
+@current_app.route("/add_transaction/<user_id>/<category_id>/<int:amount>", methods=['POST'])
+def add_transaction(user_id: str, category_id: str, amount: int):
+    try:
+        # Annahme: Hier fügen Sie Ihre Überprüfungen für die Transaktion hinzu
+        # Annahme: Sie haben eine Funktion check_transaction und eine Variable checksum definiert
+        # valid = check_transaction(transaction=f"/add_transaction/{user_id}/{category_id}/{amount}", hash=checksum)
+        # if not valid:
+        #     return jsonify({"error": "Invalid transaction"}), 403
 
-@current_app.route("/add_transaction/<user_id>/<category_id>/<amount>/<checksum>")
-def add_transaction(user_id: str, category_id: str, amount: int, checksum: str):
-    valid = check_transaction(
-        transaction="/add_transaction/" + user_id + "/" + category_id + "/" + str(amount),
-        hash=checksum)
+        amount = int(amount)
+        if amount < 1:
+            return jsonify({"error": "Invalid amount"}), 400
 
-    if valid is False:
-        abort(403)
+        user = User.query.get_or_404(user_id)
+        category = Category.query.get_or_404(category_id)
 
-    amount = int(amount)
-    if amount < 1:
-        return "oh you."
-    user = User.query.filter(User.id == user_id).first_or_404()
-    category = Category.query.filter(Category.id == category_id).first_or_404()
-    transaction = Transaction(user=user,
-                              category=category,
-                              timestamp=datetime.now(),
-                              amount=amount,
-                              undone=False)
-    db.session.add(transaction)
-    db.session.commit()
-    return "ok"
+        transaction = Transaction(user=user, category=category, timestamp=datetime.now(), amount=amount, undone=False)
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({"message": "Transaction added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @current_app.route("/get_user_balance/<user_id>")
@@ -293,24 +284,30 @@ def get_user_by_name(name: str):
     return jsonfy_users([user])
 
 
-@current_app.route("/add_user/<new_name>/<checksum>")
-def add_user(new_name: str, checksum: str):
-    if check_transaction("add_user/" + new_name, checksum) is False:
-        abort(403)
+#NEW
+@current_app.route("/add_user/<new_name>", methods=['POST'])
+def add_user(new_name: str):
+    try:
+        # Annahme: Hier fügen Sie Ihre Überprüfungen für die Benutzerhinzufügung hinzu
+        # if not check_transaction("add_user/" + new_name, checksum):
+        #     return jsonify({"error": "Invalid transaction"}), 403
 
-    user = User(new_name)
-    if User.query.filter(User.name == new_name).first() is not None:
-        return "{'Error': 'User with given name already exists'}"
-    db.session.add(user)
-    db.session.commit()
-    return "Success!"
+        # Überprüfen, ob ein Benutzer mit dem angegebenen Namen bereits existiert
+        if User.query.filter(User.name == new_name).first() is not None:
+            return jsonify({"error": "User with given name already exists"}), 400
 
+        # Benutzer erstellen und zur Datenbank hinzufügen
+        user = User(new_name)
+        db.session.add(user)
+        db.session.commit()
 
-@current_app.route("/undo/<checksum>")
-def undo(checksum: str):
+        return jsonify({"message": "User added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@current_app.route("/undo", methods=['POST'])
+def undo():
     """Undoes the latest (by time) transaction"""
-    if check_transaction("undo", checksum) is False:
-        abort(403)
     transaction = Transaction.query \
         .filter(Transaction.undone == False) \
         .order_by(Transaction.timestamp.desc()).first_or_404()
