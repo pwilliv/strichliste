@@ -22,37 +22,44 @@
 </head>
 
 <body>
-  <div class="dropdown position-fixed top-0 end-0 mt-1 me-1 bd-mode-toggle">
-    <!--<button class="btn-bd-primary py-2 d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (light)">-->
-    <button class="btn btn-lg dropdown-toggle p-3" id="bd-theme" type="button" aria-expanded="false"
-      data-bs-toggle="dropdown">
-      <i class="fa-solid fa-gears fa-xl"></i>
-      <span class="visually-hidden" id="bd-theme-text">Settings</span>
-    </button>
-    <!-- <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text"> -->
-    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
-      <li>
-        <button type="button" class="dropdown-item d-flex align-items-center" onclick="addUserDialog()">
-          <i class="fa-solid fa-user-plus me-2"></i>
-          Neuer Nutzer
-        </button>
-      </li>
-      <li>
-        <a class="dropdown-item d-flex align-items-center" href="{{ url_for('balances') }}"><i
-            class="fa-solid fa-chart-simple me-2"></i>Auswertung</a>
-      </li>
-      <li>
-        <button type="button" class="btn btn-warning dropdown-item d-flex align-items-center" onclick="undo()">
-          <i class="fa-solid fa-rotate-left me-2"></i>
-          Rückgängig
-        </button>
-      </li>
-    </ul>
-  </div>
+  
   <div class="bg-light m-0">
-    <header class="d-flex justify-content-center py-3">
-      <h2>Getränkeliste Familientreffen 2024</h2>
-      <hr>
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="col-md-2 mb-2 mb-md-0">
+        <div class="dropdown position-fixed top-0 end-0 mt-1 me-1 bd-mode-toggle">
+          <button class="btn btn-lg dropdown-toggle p-3" id="bd-theme" type="button" aria-expanded="false"
+            data-bs-toggle="dropdown">
+            <i class="fa-solid fa-gears fa-xl"></i>
+            <span class="visually-hidden" id="bd-theme-text">Settings</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+            <li>
+              <button type="button" class="dropdown-item d-flex align-items-center" onclick="addUserDialog()">
+                <i class="fa-solid fa-user-plus me-2"></i>
+                Neuer Nutzer
+              </button>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{{ url_for('balances') }}"><i
+                  class="fa-solid fa-chart-simple me-2"></i>Auswertung</a>
+            </li>
+            <li>
+              <button type="button" class="btn btn-warning dropdown-item d-flex align-items-center" onclick="undo()">
+                <i class="fa-solid fa-rotate-left me-2"></i>
+                Rückgängig
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-12 col-md-8 mb-2 justify-content-center mb-md-0 text-center">
+        <h2>Getränkeliste Familientreffen 2024</h2>
+      </div>
+      <div class="col-md-1 text-end">
+        <a href="{{ url_for('hello') }}" class="btn btn-outline-primary me-2"><i class="fa-solid fa-arrow-left me-2"></i>Zurück</a>
+      </div>
+      <div class="col-md-1 text-end">
+      </div>
     </header>
   </div>
   <main class="d-flex flex-column mx-4 mt-4">
